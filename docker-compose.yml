@@ -1,0 +1,107 @@
+# Layer: infrastructure
+# ad_monitor 容器编排：web + celery-worker + celery-beat + redis
+#
+# ──────────────────────────────────────────────
+# 启动命令
+# ──────────────────────────────────────────────
+#   cp .env.example .env          # 按需修改密钥（首次）
+#   docker compose up -d --build  # 启动全部服务
+#   docker compose logs -f web     # 看初始化日志（migrate/collectstatic）
+#   docker compose exec web python manage.py createsuperuser
+#   docker compose down           # 停止（-v 同时删除 volume，慎用）
+#
+# ──────────────────────────────────────────────
+# 数据持久化（SQLite，暂不引入 Postgres）
+# ──────────────────────────────────────────────
+#   db.sqlite3 落在 named volume sqlite_data → /app/docker-data/db.sqlite3
+#   （对应 docker.py 默认 SQLITE_PATH=docker-data/db.sqlite3）
+#   redis 数据在 named volume redis_data → /data
+#
+# ──────────────────────────────────────────────
+# 常用端点
+# ──────────────────────────────────────────────
+#   API:        http://localhost:8000/api/
+#   Swagger:    http://localhost:8000/api/schema/swagger-ui/
+#   Admin:      http://localhost:8000/admin/
+# ──────────────────────────────────────────────
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ad_monitor_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    # 开发期暴露到宿主机便于调试（celery/redis-cli 直连）；生产可去掉 ports
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis_data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ad_monitor:latest
+    container_name: ad_monitor_web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # 容器内固定走 compose 网络中的 redis 服务（覆盖 env_file 中的同名变量）
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - sqlite_data:/app/docker-data
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+
+  celery-worker:
+    image: ad_monitor:latest
+    container_name: ad_monitor_celery_worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: celery -A ad_monitor worker -l info --pool=solo
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - sqlite_data:/app/docker-data
+      - media_data:/app/media
+
+  celery-beat:
+    image: ad_monitor:latest
+    container_name: ad_monitor_celery_beat
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: celery -A ad_monitor beat -l info
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery-worker:
+        condition: service_started
+    volumes:
+      - sqlite_data:/app/docker-data
+
+volumes:
+  redis_data:
+  sqlite_data:
+  static_data:
+  media_data:

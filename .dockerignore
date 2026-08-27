@@ -1,0 +1,20 @@
+# 版本控制与本地环境
+.git
+.gitignore
+.venv
+.env
+.env.docker
+.pytest_cache
+__pycache__/
+*.pyc
+
+# 数据与生成物（*.sqlite3 覆盖 db.sqlite3 / docker-data 内的库文件）
+*.sqlite3
+docker-data/
+staticfiles/
+media/
+openapi.json
+
+# 文档
+PROJECT_STRUCTURE.md
+docker-compose.yml

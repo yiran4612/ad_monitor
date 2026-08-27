@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Django
+*.sqlite3
+*.sqlite
+media/
+staticfiles/
+static/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Env / secrets
+.env
+*.pem
+*.key
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Docker
+docker-data/

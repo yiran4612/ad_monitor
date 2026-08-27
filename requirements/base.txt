@@ -1,0 +1,55 @@
+# ============================================================
+# ad_monitor - Base Dependencies
+# ============================================================
+# Install:  pip install -r requirements/base.txt
+# Python:   >=3.10
+# ============================================================
+
+# --- Core Framework ---
+Django>=4.2,<5.0
+djangorestframework>=3.14,<3.16
+django-cors-headers>=4.0,<5.0
+django-filter>=23.0
+
+# --- Database ---
+mysqlclient>=2.2
+
+# --- Authentication ---
+djangorestframework-simplejwt>=5.3
+
+# --- Storage & Cloud (Alibaba OSS) ---
+django-storages>=1.14
+oss2>=2.18
+
+# --- Third-Party Integrations ---
+# WeChat Pay / WeChat OAuth
+# 注：wechatpy 2.0 仅提供 alpha 版本，Python 3.11 下无稳定版，固定 1.8.x
+wechatpy>=1.8.18,<2.0
+# Alibaba Cloud SMS (dysmsapi)
+alibabacloud_dysmsapi20170525
+
+# --- Async Tasks (Celery + Redis) ---
+celery>=5.3,<6.0
+redis>=5.0
+django-celery-results>=2.5
+
+# --- Media Processing ---
+Pillow>=10.0
+
+# --- Environment & Config ---
+python-dotenv>=1.0
+
+# --- Developer Tools ---
+django-extensions>=3.2
+
+# --- API Documentation ---
+drf-spectacular>=0.27
+
+# --- Import / Export ---
+django-import-export>=4.0
+
+# --- File Lifecycle ---
+django-cleanup>=8.0
+
+# --- Production Server ---
+gunicorn>=21.2
