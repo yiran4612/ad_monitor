@@ -1,0 +1,1612 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Ad Monitor API",
+        "version": "1.0.0",
+        "description": "广告合规监测平台接口文档"
+    },
+    "paths": {
+        "/api/ads/advertisers/": {
+            "get": {
+                "operationId": "ads_advertisers_list",
+                "description": "支持 ?status=active 过滤",
+                "summary": "广告主列表",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "分页结果集中的页码。",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string",
+                            "title": "状态",
+                            "enum": [
+                                "active",
+                                "inactive",
+                                "paused"
+                            ]
+                        },
+                        "description": "* `active` - 正常\n* `inactive` - 停用\n* `paused` - 暂停"
+                    }
+                ],
+                "tags": [
+                    "广告主"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAdvertiserList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "ads_advertisers_create",
+                "summary": "创建广告主",
+                "tags": [
+                    "广告主"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Advertiser"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Advertiser"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Advertiser"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Advertiser"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/ads/advertisers/{id}/": {
+            "get": {
+                "operationId": "ads_advertisers_retrieve",
+                "summary": "广告主详情",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "标识此 广告主 的 UUID 字符串。",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "广告主"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Advertiser"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "ads_advertisers_update",
+                "summary": "更新广告主",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "标识此 广告主 的 UUID 字符串。",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "广告主"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Advertiser"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Advertiser"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Advertiser"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Advertiser"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "ads_advertisers_destroy",
+                "summary": "删除广告主（软删除）",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "标识此 广告主 的 UUID 字符串。",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "广告主"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/ads/campaigns/": {
+            "get": {
+                "operationId": "ads_campaigns_list",
+                "description": "支持 ?advertiser_id=<uuid> 过滤",
+                "summary": "广告活动列表",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "advertiser_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "分页结果集中的页码。",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "广告活动"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedCampaignListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "ads_campaigns_create",
+                "summary": "创建广告活动",
+                "tags": [
+                    "广告活动"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Campaign"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Campaign"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Campaign"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CampaignList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/ads/campaigns/{id}/status/": {
+            "patch": {
+                "operationId": "ads_campaigns_status_partial_update",
+                "summary": "变更活动状态",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "标识此 广告活动 的 UUID 字符串。",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "广告活动"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCampaignStatusUpdate"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCampaignStatusUpdate"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCampaignStatusUpdate"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CampaignList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/ads/monitor-rules/": {
+            "get": {
+                "operationId": "ads_monitor_rules_list",
+                "description": "支持可选参数 ?advertiser_id=<uuid>；带参时仅返回该广告主启用中的规则，不带参时返回全部规则。",
+                "summary": "监控规则列表",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "分页结果集中的页码。",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "监控规则"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedMonitorRuleList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "ads_monitor_rules_create",
+                "description": "监控规则 ViewSet：仅 list / create，手动方法，不使用 DRF 写钩子。",
+                "summary": "创建监控规则",
+                "tags": [
+                    "监控规则"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MonitorRule"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MonitorRule"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MonitorRule"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MonitorRule"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/ads/violations/": {
+            "get": {
+                "operationId": "ads_violations_list",
+                "description": "支持 ?campaign_id=<uuid> 过滤",
+                "summary": "违规记录列表",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "campaign_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "分页结果集中的页码。",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "违规记录"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedViolationListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "ads_violations_create",
+                "summary": "创建违规记录",
+                "tags": [
+                    "违规记录"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ViolationCreate"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ViolationCreate"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ViolationCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ViolationList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/ads/violations/{id}/resolve/": {
+            "patch": {
+                "operationId": "ads_violations_resolve_partial_update",
+                "summary": "标记违规已处理",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "标识此 违规记录 的 UUID 字符串。",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "违规记录"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedViolationList"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedViolationList"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedViolationList"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ViolationList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/schema/": {
+            "get": {
+                "operationId": "schema_retrieve",
+                "description": "OpenApi3 schema for this API. Format can be selected via content negotiation.\n\n- YAML: application/vnd.oai.openapi\n- JSON: application/vnd.oai.openapi+json",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "format",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "json",
+                                "yaml"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "lang",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "af",
+                                "ar",
+                                "ar-dz",
+                                "ast",
+                                "az",
+                                "be",
+                                "bg",
+                                "bn",
+                                "br",
+                                "bs",
+                                "ca",
+                                "ckb",
+                                "cs",
+                                "cy",
+                                "da",
+                                "de",
+                                "dsb",
+                                "el",
+                                "en",
+                                "en-au",
+                                "en-gb",
+                                "eo",
+                                "es",
+                                "es-ar",
+                                "es-co",
+                                "es-mx",
+                                "es-ni",
+                                "es-ve",
+                                "et",
+                                "eu",
+                                "fa",
+                                "fi",
+                                "fr",
+                                "fy",
+                                "ga",
+                                "gd",
+                                "gl",
+                                "he",
+                                "hi",
+                                "hr",
+                                "hsb",
+                                "hu",
+                                "hy",
+                                "ia",
+                                "id",
+                                "ig",
+                                "io",
+                                "is",
+                                "it",
+                                "ja",
+                                "ka",
+                                "kab",
+                                "kk",
+                                "km",
+                                "kn",
+                                "ko",
+                                "ky",
+                                "lb",
+                                "lt",
+                                "lv",
+                                "mk",
+                                "ml",
+                                "mn",
+                                "mr",
+                                "ms",
+                                "my",
+                                "nb",
+                                "ne",
+                                "nl",
+                                "nn",
+                                "os",
+                                "pa",
+                                "pl",
+                                "pt",
+                                "pt-br",
+                                "ro",
+                                "ru",
+                                "sk",
+                                "sl",
+                                "sq",
+                                "sr",
+                                "sr-latn",
+                                "sv",
+                                "sw",
+                                "ta",
+                                "te",
+                                "tg",
+                                "th",
+                                "tk",
+                                "tr",
+                                "tt",
+                                "udm",
+                                "ug",
+                                "uk",
+                                "ur",
+                                "uz",
+                                "vi",
+                                "zh-hans",
+                                "zh-hant"
+                            ]
+                        }
+                    }
+                ],
+                "tags": [
+                    "schema"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/vnd.oai.openapi": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "application/yaml": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "application/vnd.oai.openapi+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/tasks/tasks/": {
+            "post": {
+                "operationId": "tasks_tasks_create",
+                "tags": [
+                    "tasks"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/tasks/tasks/{id}/": {
+            "get": {
+                "operationId": "tasks_tasks_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/users/login/": {
+            "post": {
+                "operationId": "users_login_create",
+                "tags": [
+                    "users"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/users/register/": {
+            "post": {
+                "operationId": "users_register_create",
+                "tags": [
+                    "users"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Advertiser": {
+                "type": "object",
+                "description": "广告主：列表 / 详情 / 创建 / 更新 共用。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "广告主名称",
+                        "maxLength": 100
+                    },
+                    "contact_mobile": {
+                        "type": "string",
+                        "title": "联系电话",
+                        "maxLength": 20
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Status741Enum"
+                            }
+                        ],
+                        "title": "状态"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "创建时间"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "更新时间"
+                    }
+                },
+                "required": [
+                    "contact_mobile",
+                    "created_at",
+                    "id",
+                    "name",
+                    "updated_at"
+                ]
+            },
+            "AdvertiserBrief": {
+                "type": "object",
+                "description": "广告主基本信息（嵌套展示用）。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "广告主名称",
+                        "maxLength": 100
+                    },
+                    "contact_mobile": {
+                        "type": "string",
+                        "title": "联系电话",
+                        "maxLength": 20
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Status741Enum"
+                            }
+                        ],
+                        "title": "状态"
+                    }
+                },
+                "required": [
+                    "contact_mobile",
+                    "id",
+                    "name"
+                ]
+            },
+            "Campaign": {
+                "type": "object",
+                "description": "广告活动创建：advertiser 只接受 UUID 字符串，不嵌套写入。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "advertiser": {
+                        "type": "string",
+                        "format": "uuid",
+                        "writeOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "活动标题",
+                        "maxLength": 200
+                    },
+                    "platform": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PlatformEnum"
+                            }
+                        ],
+                        "title": "投放平台"
+                    },
+                    "budget": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$",
+                        "title": "预算"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "开始日期"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "结束日期"
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusB65Enum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "title": "状态"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "创建时间"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "更新时间"
+                    }
+                },
+                "required": [
+                    "advertiser",
+                    "budget",
+                    "created_at",
+                    "end_date",
+                    "id",
+                    "start_date",
+                    "status",
+                    "title",
+                    "updated_at"
+                ]
+            },
+            "CampaignBrief": {
+                "type": "object",
+                "description": "广告活动基本信息（违规记录嵌套展示用）。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "活动标题",
+                        "maxLength": 200
+                    },
+                    "platform": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PlatformEnum"
+                            }
+                        ],
+                        "title": "投放平台"
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusB65Enum"
+                            }
+                        ],
+                        "title": "状态"
+                    }
+                },
+                "required": [
+                    "id",
+                    "title"
+                ]
+            },
+            "CampaignList": {
+                "type": "object",
+                "description": "广告活动列表：嵌套广告主基本信息。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "advertiser": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/AdvertiserBrief"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "活动标题",
+                        "maxLength": 200
+                    },
+                    "platform": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PlatformEnum"
+                            }
+                        ],
+                        "title": "投放平台"
+                    },
+                    "budget": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$",
+                        "title": "预算"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "开始日期"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "结束日期"
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusB65Enum"
+                            }
+                        ],
+                        "title": "状态"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "创建时间"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "更新时间"
+                    }
+                },
+                "required": [
+                    "advertiser",
+                    "budget",
+                    "created_at",
+                    "end_date",
+                    "id",
+                    "start_date",
+                    "title",
+                    "updated_at"
+                ]
+            },
+            "MonitorRule": {
+                "type": "object",
+                "description": "监控规则：列表 / 创建共用。\n\nadvertiser：\n- 写入（创建）：只接受 UUID 字符串，不嵌套写入；\n- 展示（读取）：嵌套返回 {id, name}，不泄露其余字段。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "advertiser": {
+                        "type": "string",
+                        "format": "uuid",
+                        "writeOnly": true
+                    },
+                    "rule_type": {
+                        "$ref": "#/components/schemas/RuleTypeEnum"
+                    },
+                    "keyword": {
+                        "type": "string",
+                        "title": "关键词",
+                        "maxLength": 200
+                    },
+                    "threshold": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+                        "nullable": true,
+                        "title": "阈值"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "是否启用"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "创建时间"
+                    }
+                },
+                "required": [
+                    "advertiser",
+                    "created_at",
+                    "id",
+                    "rule_type"
+                ]
+            },
+            "PaginatedAdvertiserList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Advertiser"
+                        }
+                    }
+                }
+            },
+            "PaginatedCampaignListList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CampaignList"
+                        }
+                    }
+                }
+            },
+            "PaginatedMonitorRuleList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MonitorRule"
+                        }
+                    }
+                }
+            },
+            "PaginatedViolationListList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ViolationList"
+                        }
+                    }
+                }
+            },
+            "PatchedCampaignStatusUpdate": {
+                "type": "object",
+                "description": "广告活动状态变更。",
+                "properties": {
+                    "status": {
+                        "$ref": "#/components/schemas/StatusB65Enum"
+                    }
+                }
+            },
+            "PatchedViolationList": {
+                "type": "object",
+                "description": "违规记录列表 / 详情：嵌套广告活动基本信息。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "campaign": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/CampaignBrief"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "rule": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "监控规则"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "违规描述"
+                    },
+                    "screenshot_url": {
+                        "title": "截图地址",
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uri",
+                                "maxLength": 200
+                            },
+                            {
+                                "type": "string",
+                                "maxLength": 0
+                            }
+                        ]
+                    },
+                    "detected_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "检测时间"
+                    },
+                    "resolved": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "是否已处理"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "创建时间"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "更新时间"
+                    }
+                }
+            },
+            "PlatformEnum": {
+                "enum": [
+                    "douyin",
+                    "kuaishou",
+                    "toutiao",
+                    "wechat",
+                    "bilibili",
+                    "other"
+                ],
+                "type": "string",
+                "description": "* `douyin` - 抖音\n* `kuaishou` - 快手\n* `toutiao` - 头条\n* `wechat` - 微信\n* `bilibili` - B站\n* `other` - 其他"
+            },
+            "RuleTypeEnum": {
+                "enum": [
+                    "keyword",
+                    "budget_overrun",
+                    "platform_violation",
+                    "custom"
+                ],
+                "type": "string",
+                "description": "* `keyword` - 关键词\n* `budget_overrun` - 预算超支\n* `platform_violation` - 平台违规\n* `custom` - 自定义"
+            },
+            "Status741Enum": {
+                "enum": [
+                    "active",
+                    "inactive",
+                    "paused"
+                ],
+                "type": "string",
+                "description": "* `active` - 正常\n* `inactive` - 停用\n* `paused` - 暂停"
+            },
+            "StatusB65Enum": {
+                "enum": [
+                    "draft",
+                    "running",
+                    "paused",
+                    "ended"
+                ],
+                "type": "string",
+                "description": "* `draft` - 草稿\n* `running` - 投放中\n* `paused` - 已暂停\n* `ended` - 已结束"
+            },
+            "ViolationCreate": {
+                "type": "object",
+                "description": "违规记录创建：campaign / rule 只接受 UUID 字符串，不嵌套写入。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "campaign": {
+                        "type": "string",
+                        "format": "uuid",
+                        "writeOnly": true
+                    },
+                    "rule": {
+                        "type": "string",
+                        "format": "uuid",
+                        "writeOnly": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "违规描述"
+                    },
+                    "screenshot_url": {
+                        "title": "截图地址",
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uri",
+                                "maxLength": 200
+                            },
+                            {
+                                "type": "string",
+                                "maxLength": 0
+                            }
+                        ]
+                    },
+                    "detected_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "检测时间"
+                    },
+                    "resolved": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "是否已处理"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "创建时间"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "更新时间"
+                    }
+                },
+                "required": [
+                    "campaign",
+                    "created_at",
+                    "description",
+                    "detected_at",
+                    "id",
+                    "resolved",
+                    "rule",
+                    "updated_at"
+                ]
+            },
+            "ViolationList": {
+                "type": "object",
+                "description": "违规记录列表 / 详情：嵌套广告活动基本信息。",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "campaign": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/CampaignBrief"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "rule": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "监控规则"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "违规描述"
+                    },
+                    "screenshot_url": {
+                        "title": "截图地址",
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uri",
+                                "maxLength": 200
+                            },
+                            {
+                                "type": "string",
+                                "maxLength": 0
+                            }
+                        ]
+                    },
+                    "detected_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "检测时间"
+                    },
+                    "resolved": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "是否已处理"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "创建时间"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "title": "更新时间"
+                    }
+                },
+                "required": [
+                    "campaign",
+                    "created_at",
+                    "description",
+                    "detected_at",
+                    "id",
+                    "resolved",
+                    "rule",
+                    "updated_at"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "auth",
+            "description": "认证：注册 / 登录 / Token 刷新"
+        },
+        {
+            "name": "advertisers",
+            "description": "广告主管理"
+        },
+        {
+            "name": "campaigns",
+            "description": "广告活动管理"
+        },
+        {
+            "name": "violations",
+            "description": "违规记录 & 处置"
+        },
+        {
+            "name": "monitor-rules",
+            "description": "监测规则"
+        },
+        {
+            "name": "tasks",
+            "description": "异步任务提交与查询"
+        }
+    ]
+}
