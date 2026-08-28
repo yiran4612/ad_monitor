@@ -12,12 +12,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(BASE_DIR / "db.sqlite3"),
+# ===== Database：默认 SQLite，环境变量 USE_POSTGRES=1 时切 Postgres =====
+if os.environ.get("USE_POSTGRES") in ("1", "true", "True"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME", "ad_monitor"),
+            "USER": os.environ.get("DB_USER", "ad_monitor"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", "ad_monitor"),
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": str(BASE_DIR / "db.sqlite3"),
+        }
+    }
 
 DEBUG = True
 

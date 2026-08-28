@@ -5,8 +5,8 @@
 #
 # 与 requirements/base.txt 的区别：
 #   - 版本对齐本地 .venv 实际安装（Django 5.2.17 / DRF 3.17 / Celery 5.6）
-#   - 不含 mysqlclient（slim 镜像无编译链，且容器场景使用 SQLite）
-#   - 不含 psycopg2-binary（暂不引入 Postgres，后续切换时再追加）
+#   - 不含 mysqlclient（slim 镜像无编译链）
+#   - 含 psycopg2-binary（USE_POSTGRES=1 / docker / CI 走 Postgres 时需要）
 # ============================================================
 
 # --- Core Framework ---
@@ -52,3 +52,10 @@ django-cleanup>=8.0
 
 # --- Production Server ---
 gunicorn>=21.2
+
+# --- Database Driver (Postgres，USE_POSTGRES=1 时启用) ---
+psycopg2-binary>=2.9
+
+pytest>=8.0
+pytest-django>=4.8
+pytest-cov>=5.0

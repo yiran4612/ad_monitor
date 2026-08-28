@@ -21,12 +21,34 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ad_monitor
+          POSTGRES_USER: ad_monitor
+          POSTGRES_PASSWORD: ad_monitor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ad_monitor -d ad_monitor"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       SECRET_KEY: test-secret-key-for-ci-at-least-32-bytes-long
       JWT_SIGNING_KEY: test-jwt-signing-key-for-ci-at-least-32-bytes-long
       CELERY_BROKER_URL: redis://localhost:6379/0
       CELERY_RESULT_BACKEND: redis://localhost:6379/0
       DEBUG: "True"
+      # 数据库：CI 走 Postgres service（容器内 127.0.0.1:5432）
+      USE_POSTGRES: "1"
+      DB_ENGINE: postgresql
+      DB_NAME: ad_monitor
+      DB_USER: ad_monitor
+      DB_PASSWORD: ad_monitor
+      DB_HOST: localhost
+      DB_PORT: "5432"
 
     steps:
       - name: Checkout code

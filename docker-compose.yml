@@ -11,10 +11,12 @@
 #   docker compose down           # 停止（-v 同时删除 volume，慎用）
 #
 # ──────────────────────────────────────────────
-# 数据持久化（SQLite，暂不引入 Postgres）
+# 数据持久化（Postgres 为主库，SQLite volume 保留作回退）
 # ──────────────────────────────────────────────
-#   db.sqlite3 落在 named volume sqlite_data → /app/docker-data/db.sqlite3
-#   （对应 docker.py 默认 SQLITE_PATH=docker-data/db.sqlite3）
+#   postgres 数据在 named volume postgres_data → /var/lib/postgresql/data
+#   （web/worker/beat 通过 USE_POSTGRES=1 + DB_HOST=postgres 连接）
+#   SQLite 回退模式：去掉三个服务的 DB_* 环境变量，db.sqlite3 落在
+#   named volume sqlite_data → /app/docker-data/db.sqlite3
 #   redis 数据在 named volume redis_data → /data
 #
 # ──────────────────────────────────────────────
@@ -41,6 +43,24 @@ services:
       retries: 5
     volumes:
       - redis_data:/data
+      
+  postgres:
+    image: postgres:16-alpine
+    container_name: ad_monitor_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ad_monitor
+      POSTGRES_USER: ad_monitor
+      POSTGRES_PASSWORD: ad_monitor
+    ports:
+      - "5432:5432"   # 开发期暴露，生产可去掉
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ad_monitor -d ad_monitor"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  
 
   web:
     build:
@@ -55,10 +75,20 @@ services:
       # 容器内固定走 compose 网络中的 redis 服务（覆盖 env_file 中的同名变量）
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      # 数据库：走 compose 网络中的 postgres 服务（docker.py 读 DB_*，dev.py 读 USE_POSTGRES）
+      USE_POSTGRES: "1"
+      DB_ENGINE: postgresql
+      DB_NAME: ad_monitor
+      DB_USER: ad_monitor
+      DB_PASSWORD: ad_monitor
+      DB_HOST: postgres
+      DB_PORT: "5432"
     ports:
       - "8000:8000"
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     volumes:
       - sqlite_data:/app/docker-data
@@ -74,9 +104,18 @@ services:
     environment:
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      USE_POSTGRES: "1"
+      DB_ENGINE: postgresql
+      DB_NAME: ad_monitor
+      DB_USER: ad_monitor
+      DB_PASSWORD: ad_monitor
+      DB_HOST: postgres
+      DB_PORT: "5432"
     command: celery -A ad_monitor worker -l info --pool=solo
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     volumes:
       - sqlite_data:/app/docker-data
@@ -91,9 +130,18 @@ services:
     environment:
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      USE_POSTGRES: "1"
+      DB_ENGINE: postgresql
+      DB_NAME: ad_monitor
+      DB_USER: ad_monitor
+      DB_PASSWORD: ad_monitor
+      DB_HOST: postgres
+      DB_PORT: "5432"
     command: celery -A ad_monitor beat -l info
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
       celery-worker:
         condition: service_started
@@ -102,6 +150,7 @@ services:
 
 volumes:
   redis_data:
+  postgres_data:
   sqlite_data:
   static_data:
   media_data:
