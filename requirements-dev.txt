@@ -1,0 +1,7 @@
+# 测试依赖
+pytest>=8.0
+pytest-django>=4.8
+# pytest-cov>=5.0
+
+# 数据工厂（如果本地用了就加，没用就删掉）
+# factory-boy>=3.3
