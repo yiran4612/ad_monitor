@@ -151,136 +151,79 @@ docker compose down -v     # ⚠️ 会删除数据库，慎用
 
 ---
 
-## 📝 API 示例
+## 📝 API 参考
 
-> 接口统一返回 `{code, msg, data}` 结构。
+> 统一返回格式：`{code, msg, data}`
+> 认证：`Authorization: Bearer <access_token>`（注册/登录除外）
+> 交互文档：http://localhost:8000/api/docs/ （Swagger UI）
+> 管理后台：http://localhost:8000/admin/
 
 ### 认证
 
-注册
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/users/register/` | 注册 |
+| POST | `/api/users/login/` | 登录，返回 access + refresh token |
 
-curl -X POST http://localhost:8000/api/users/register/
- \
+### 广告主 `/api/ads/advertisers/`
 
--H "Content-Type: application/json" \
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 列表 |
+| POST | `/` | 创建 |
+| GET | `/{id}/` | 详情 |
+| PATCH | `/{id}/` | 更新 |
+| DELETE | `/{id}/` | 删除 |
 
--d '{"mobile":"13900139000","password":"Test123456"}'
+### 营销活动 `/api/ads/campaigns/`
 
-登录 → 获取 access / refresh token
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 列表 |
+| POST | `/` | 创建 |
+| GET | `/{id}/` | 详情 |
+| PATCH | `/{id}/` | 更新 |
+| DELETE | `/{id}/` | 删除 |
+| POST | `/{id}/status/` | 更新状态（draft/running/paused/ended） |
 
-curl -X POST http://localhost:8000/api/users/login/
- \
+### 素材 `/api/ads/creatives/`
 
--H "Content-Type: application/json" \
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 列表（支持 `?campaign={id}` 过滤） |
+| POST | `/` | 创建 |
+| GET | `/{id}/` | 详情 |
+| PATCH | `/{id}/` | 更新 |
+| DELETE | `/{id}/` | 删除（软删） |
 
--d '{"mobile":"13900139000","password":"Test123456"}'
+### 监测规则 `/api/ads/monitor-rules/`
 
-### 广告主
-列表
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 列表 |
+| POST | `/` | 创建 |
+| GET | `/{id}/` | 详情 |
+| PATCH | `/{id}/` | 更新 |
+| DELETE | `/{id}/` | 删除 |
 
-curl http://localhost:8000/api/ads/advertisers/
- \
+### 违规记录 `/api/ads/violations/`
 
--H "Authorization: Bearer <access_token>"
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 列表（支持 `?status=` 过滤） |
+| POST | `/` | 创建 |
+| GET | `/{id}/` | 详情 |
+| PATCH | `/{id}/` | 更新 |
+| DELETE | `/{id}/` | 删除 |
+| POST | `/{id}/resolve/` | 处理违规 |
 
-创建
+### 检测任务 `/api/tasks/`
 
-curl -X POST http://localhost:8000/api/ads/advertisers/
- \
-
--H "Authorization: Bearer <access_token>" \
-
--H "Content-Type: application/json" \
-
--d '{"name":"测试广告主","contact_mobile":"13900139000"}'
-
-更新（PATCH）
-
-curl -X PATCH http://localhost:8000/api/ads/advertisers/
-<id>/ \
-
--H "Authorization: Bearer <access_token>" \
-
--H "Content-Type: application/json" \
-
--d '{"name":"新名称"}'
-
-### 素材（Creative）
-
-创建素材
-
-curl -X POST http://localhost:8000/api/ads/creatives/
- \
-
--H "Authorization: Bearer <access_token>" \
-
--H "Content-Type: application/json" \
-
--d '{
-
-"advertiser":"<uuid>",
-
-"campaign":"<uuid>",
-
-"name":"测试视频",
-
-"material_type":"video",
-
-"file_url":"https://example.com/video.mp4
-"
-
-}'
-
-审核通过
-
-curl -X POST http://localhost:8000/api/ads/creatives/
-<id>/approve/ \
-
--H "Authorization: Bearer <access_token>"
-
-驳回
-
-curl -X POST http://localhost:8000/api/ads/creatives/
-<id>/reject/ \
-
--H "Authorization: Bearer <access_token>"
-
-### 检测任务
-
-触发检测
-
-curl -X POST http://localhost:8000/api/tasks/
- \
-
--H "Authorization: Bearer <access_token>" \
-
--H "Content-Type: application/json" \
-
--d '{"campaign_id":"<uuid>","video_url":"https://example.com/video.mp4
-"}'
-
-查询任务状态
-
-curl http://localhost:8000/api/tasks/
-<task_id>/ \
-
--H "Authorization: Bearer <access_token>"
-
-### 违规记录
-
-列表（可按 ?status= 筛选）
-
-curl http://localhost:8000/api/ads/violations/
- \
-
--H "Authorization: Bearer <access_token>"
-
-处理违规
-
-curl -X PATCH http://localhost:8000/api/ads/violations/
-<id>/resolve/ \
-
--H "Authorization: Bearer <access_token>"
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 列表 |
+| POST | `/` | 触发检测 |
+| GET | `/{id}/` | 查询任务状态 |
 
 ---
 

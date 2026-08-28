@@ -51,6 +51,11 @@ INSTALLED_APPS = [
 SIMPLE_JWT = {
     # 签名密钥沿用 base 的环境变量 JWT_SIGNING_KEY（未设置时回退 SECRET_KEY）
     "SIGNING_KEY": JWT_SIGNING_KEY,
+    #生成环境用，不能在线上保存SIGNING_KEY，从本地读取
+    # "SIGNING_KEY": os.environ.get(
+    #     "JWT_SIGNING_KEY",
+    #     os.environ.get("SIMPLE_JWT_SIGNING_KEY", SECRET_KEY)
+    # ),
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),   # 改成 24 小时
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),    # 改成 7 天
     "ROTATE_REFRESH_TOKENS": False,

@@ -1,6 +1,7 @@
 # Layer: API
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.users.exceptions import InvalidCredentials, UserAlreadyExists
@@ -9,6 +10,7 @@ from apps.users.services.user_service import UserService
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def register_view(request):
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -29,6 +31,7 @@ def register_view(request):
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login_view(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

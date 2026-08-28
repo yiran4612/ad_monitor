@@ -124,3 +124,4 @@ class TestCreative:
         names = [r["name"] for r in _results(resp)]
         assert "存活" in names
         assert "已删" not in names
+

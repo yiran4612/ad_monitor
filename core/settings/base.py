@@ -157,9 +157,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    # 权限：默认允许所有访问（开发期）
+    # 权限：默认需要登录（注册/登录视图在 apps/users/views.py 显式 AllowAny）
     "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ),
     # 分页
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
