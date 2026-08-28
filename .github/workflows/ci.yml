@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY || 'test-secret-key-for-ci-at-least-32-bytes-long' }}
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY || 'test-jwt-signing-key-for-ci-at-least-32-bytes' }}
+          CELERY_BROKER_URL: redis://localhost:6379/0
+          CELERY_RESULT_BACKEND: redis://localhost:6379/0
+          DEBUG: "True"
+        run: |
+          python manage.py makemigrations --check --dry-run
+          python manage.py migrate
+
+      - name: Run tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY || 'test-secret-key-for-ci-at-least-32-bytes-long' }}
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY || 'test-jwt-signing-key-for-ci-at-least-32-bytes' }}
+          CELERY_BROKER_URL: redis://localhost:6379/0
+          CELERY_RESULT_BACKEND: redis://localhost:6379/0
+          DEBUG: "True"
+        run: |
+          pytest -v --tb=short
