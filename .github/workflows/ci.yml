@@ -21,6 +21,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      SECRET_KEY: test-secret-key-for-ci-at-least-32-bytes-long
+      JWT_SIGNING_KEY: test-jwt-signing-key-for-ci-at-least-32-bytes-long
+      CELERY_BROKER_URL: redis://localhost:6379/0
+      CELERY_RESULT_BACKEND: redis://localhost:6379/0
+      DEBUG: "True"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,29 +36,26 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "requirements.txt"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run migrations
-        env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY || 'test-secret-key-for-ci-at-least-32-bytes-long' }}
-          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY || 'test-jwt-signing-key-for-ci-at-least-32-bytes' }}
-          CELERY_BROKER_URL: redis://localhost:6379/0
-          CELERY_RESULT_BACKEND: redis://localhost:6379/0
-          DEBUG: "True"
+      - name: Show Python/pytest location (debug)
+        if: failure()
         run: |
-          python manage.py makemigrations --check --dry-run
-          python manage.py migrate
+          which python
+          python -m pip show pytest django | head -40
+          python -c "import sys; print(sys.executable); print(sys.path)"
+
+      - name: Check migrations
+        run: |
+          python -m manage makemigrations --check --dry-run
+          python -m manage migrate
 
       - name: Run tests
-        env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY || 'test-secret-key-for-ci-at-least-32-bytes-long' }}
-          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY || 'test-jwt-signing-key-for-ci-at-least-32-bytes' }}
-          CELERY_BROKER_URL: redis://localhost:6379/0
-          CELERY_RESULT_BACKEND: redis://localhost:6379/0
-          DEBUG: "True"
         run: |
-          pytest -v --tb=short
+          python -m pytest -v --tb=short
