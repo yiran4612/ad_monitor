@@ -16,12 +16,11 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from apps.ads.models import Campaign, Creative, MonitorRule, ViolationRecord
+from apps.ads.models import Campaign, Creative, MonitorRule
 from apps.ads.services.violation_service import ViolationService
 
 
 class DetectionService:
-
     # ──────────────────────────────────────────────
     # 查询：定时扫描的数据来源（只读）
     # ──────────────────────────────────────────────
@@ -29,9 +28,7 @@ class DetectionService:
     @staticmethod
     def list_active_campaigns() -> QuerySet:
         """投放中（RUNNING）且未软删除的活动。"""
-        return Campaign.objects.filter(
-            status=Campaign.Status.RUNNING, is_deleted=False
-        )
+        return Campaign.objects.filter(status=Campaign.Status.RUNNING, is_deleted=False)
 
     @staticmethod
     def list_video_creatives(campaign: Campaign) -> QuerySet:
@@ -89,14 +86,16 @@ class DetectionService:
 
         violation_ids = []
         for rule in matched:
-            violation = ViolationService.create_violation({
-                "campaign": str(campaign.id),
-                "rule": str(rule.id),
-                "description": f"[自动检测] 视频 {video_url} 命中关键词「{rule.keyword}」",
-                "screenshot_url": "",
-                "detected_at": timezone.now(),
-                "resolved": False,
-            })
+            violation = ViolationService.create_violation(
+                {
+                    "campaign": str(campaign.id),
+                    "rule": str(rule.id),
+                    "description": f"[自动检测] 视频 {video_url} 命中关键词「{rule.keyword}」",
+                    "screenshot_url": "",
+                    "detected_at": timezone.now(),
+                    "resolved": False,
+                }
+            )
             violation_ids.append(str(violation.id))
 
         return {

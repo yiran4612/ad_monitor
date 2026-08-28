@@ -29,7 +29,11 @@ class CampaignViewSet(viewsets.GenericViewSet):
             return CampaignStatusUpdateSerializer
         return CampaignSerializer
 
-    @extend_schema(summary="广告活动列表", description="支持 ?advertiser_id=<uuid> 过滤", responses={200: CampaignListSerializer(many=True)})
+    @extend_schema(
+        summary="广告活动列表",
+        description="支持 ?advertiser_id=<uuid> 过滤",
+        responses={200: CampaignListSerializer(many=True)},
+    )
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -63,7 +67,11 @@ class CampaignViewSet(viewsets.GenericViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @extend_schema(summary="变更活动状态", request=CampaignStatusUpdateSerializer, responses={200: CampaignListSerializer})
+    @extend_schema(
+        summary="变更活动状态",
+        request=CampaignStatusUpdateSerializer,
+        responses={200: CampaignListSerializer},
+    )
     @action(detail=True, methods=["patch"], url_path="status")
     def update_status(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
@@ -72,6 +80,4 @@ class CampaignViewSet(viewsets.GenericViewSet):
             campaign = CampaignService.update_campaign_status(pk, serializer.validated_data["status"])
         except CampaignNotFound as e:
             return Response({"code": 404, "msg": str(e)}, status=status.HTTP_404_NOT_FOUND)
-        return Response(
-            {"code": 200, "msg": "状态更新成功", "data": CampaignListSerializer(campaign).data}
-        )
+        return Response({"code": 200, "msg": "状态更新成功", "data": CampaignListSerializer(campaign).data})

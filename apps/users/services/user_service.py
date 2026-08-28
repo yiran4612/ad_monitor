@@ -8,7 +8,6 @@ from core.auth.jwt import JWTService
 
 
 class UserService:
-
     @staticmethod
     @transaction.atomic
     def register_user(*, mobile: str, password: str, nickname: str, role: str) -> User:

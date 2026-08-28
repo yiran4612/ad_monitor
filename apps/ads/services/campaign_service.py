@@ -7,13 +7,12 @@ from apps.ads.models import Advertiser, Campaign
 
 
 class CampaignService:
-
     @staticmethod
     def _get_active(campaign_id) -> Campaign:
         try:
             return Campaign.objects.get(id=campaign_id, is_deleted=False)
-        except Campaign.DoesNotExist:
-            raise CampaignNotFound(campaign_id)
+        except Campaign.DoesNotExist as e:
+            raise CampaignNotFound(campaign_id) from e
 
     @staticmethod
     @transaction.atomic
@@ -22,8 +21,8 @@ class CampaignService:
         advertiser_id = payload.pop("advertiser")
         try:
             Advertiser.objects.get(id=advertiser_id, is_deleted=False)
-        except Advertiser.DoesNotExist:
-            raise AdvertiserNotFound(advertiser_id)
+        except Advertiser.DoesNotExist as e:
+            raise AdvertiserNotFound(advertiser_id) from e
         return Campaign.objects.create(advertiser_id=advertiser_id, **payload)
 
     @staticmethod

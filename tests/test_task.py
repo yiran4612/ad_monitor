@@ -1,17 +1,14 @@
-import pytest
 from unittest.mock import MagicMock, patch
 
+import pytest
 
 pytestmark = pytest.mark.django_db
 
 
 class TestTask:
-
     @patch("apps.ads.views.task_view.detect_video_task")
     @patch("apps.ads.views.task_view.AsyncResult")
-    def test_trigger_detect_task(
-        self, mock_async_result, mock_detect_video_task, auth_client, test_campaign
-    ):
+    def test_trigger_detect_task(self, mock_async_result, mock_detect_video_task, auth_client, test_campaign):
         fake_result = MagicMock()
         fake_result.id = "fake-task-id"
         mock_detect_video_task.delay.return_value = fake_result
@@ -37,15 +34,11 @@ class TestTask:
         assert resp.json()["data"]["task_id"] == "fake-task-id"
         assert resp.json()["data"]["status"] == "pending"
 
-        mock_detect_video_task.delay.assert_called_once_with(
-            str(test_campaign.id), "https://example.com/test.mp4"
-        )
+        mock_detect_video_task.delay.assert_called_once_with(str(test_campaign.id), "https://example.com/test.mp4")
 
     @patch("apps.ads.views.task_view.detect_video_task")
     @patch("apps.ads.views.task_view.AsyncResult")
-    def test_get_task_status(
-        self, mock_async_result, mock_detect_video_task, auth_client, test_campaign
-    ):
+    def test_get_task_status(self, mock_async_result, mock_detect_video_task, auth_client, test_campaign):
         fake_result = MagicMock()
         fake_result.id = "fake-task-id"
         mock_detect_video_task.delay.return_value = fake_result

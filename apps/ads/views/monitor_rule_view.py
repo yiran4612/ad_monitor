@@ -24,9 +24,7 @@ class MonitorRuleViewSet(viewsets.GenericViewSet):
         advertiser_id = request.query_params.get("advertiser_id")
         if advertiser_id:
             try:
-                queryset = MonitorRuleService.list_active_rules_by_advertiser(
-                    advertiser_id
-                )
+                queryset = MonitorRuleService.list_active_rules_by_advertiser(advertiser_id)
             except AdvertiserNotFound:
                 return Response(
                     {"code": 400, "msg": "广告主不存在"},

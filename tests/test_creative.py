@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from apps.ads.models import Campaign, Creative
 
@@ -13,7 +14,6 @@ def _results(resp):
 
 
 class TestCreative:
-
     def _payload(self, campaign, **overrides):
         payload = {
             "campaign": str(campaign.id),
@@ -28,9 +28,7 @@ class TestCreative:
     # ===== 创建：201 + Celery 任务被触发 =====
     @patch("apps.ads.services.creative_service.process_creative_task")
     def test_create_creative(self, mock_task, auth_client, test_campaign):
-        resp = auth_client.post(
-            "/api/ads/creatives/", self._payload(test_campaign), format="json"
-        )
+        resp = auth_client.post("/api/ads/creatives/", self._payload(test_campaign), format="json")
         assert resp.status_code == 201
         body = resp.json()
         assert body["code"] == 200
@@ -117,11 +115,8 @@ class TestCreative:
     # ===== 软删除素材不出现在列表 =====
     def test_list_excludes_soft_deleted(self, auth_client, test_campaign):
         Creative.objects.create(campaign=test_campaign, name="存活", material_type="image")
-        Creative.objects.create(
-            campaign=test_campaign, name="已删", material_type="image", is_deleted=True
-        )
+        Creative.objects.create(campaign=test_campaign, name="已删", material_type="image", is_deleted=True)
         resp = auth_client.get("/api/ads/creatives/")
         names = [r["name"] for r in _results(resp)]
         assert "存活" in names
         assert "已删" not in names
-

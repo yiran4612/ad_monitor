@@ -11,14 +11,17 @@ from apps.ads.services.advertiser_service import AdvertiserService
 
 @extend_schema(tags=["广告主"])
 class AdvertiserViewSet(viewsets.ModelViewSet):
-    
     serializer_class = AdvertiserSerializer
     filterset_class = AdvertiserFilter
 
     def get_queryset(self):
         return AdvertiserService.list_advertisers({})
 
-    @extend_schema(summary="广告主列表", description="支持 ?status=active 过滤", responses={200: AdvertiserSerializer(many=True)})
+    @extend_schema(
+        summary="广告主列表",
+        description="支持 ?status=active 过滤",
+        responses={200: AdvertiserSerializer(many=True)},
+    )
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)

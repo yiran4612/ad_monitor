@@ -6,10 +6,11 @@
   DetectionService.fetch_video_text 默认返回 URL 本身），并 mock
   update_state 以避免触碰 Redis result backend。
 """
+
 import uuid
+from unittest.mock import patch
 
 import pytest
-from unittest.mock import patch
 
 from apps.ads.models import Campaign, Creative, ViolationRecord
 from apps.ads.tasks import detect_video_task, scan_campaigns_task
@@ -51,14 +52,10 @@ class TestScanCampaigns:
     """scan_campaigns_task：扫描 active(RUNNING) Campaign + 视频 Creative → 触发检测。"""
 
     @patch("apps.ads.tasks.detect_video_task")
-    def test_scan_triggers_detect_exactly_once(
-        self, mock_detect, test_running_campaign, test_video_creative
-    ):
+    def test_scan_triggers_detect_exactly_once(self, mock_detect, test_running_campaign, test_video_creative):
         result = scan_campaigns_task()
 
-        mock_detect.delay.assert_called_once_with(
-            str(test_running_campaign.id), VIDEO_URL
-        )
+        mock_detect.delay.assert_called_once_with(str(test_running_campaign.id), VIDEO_URL)
         assert result == {"scanned_campaigns": 1, "triggered_tasks": 1}
 
     @patch("apps.ads.tasks.detect_video_task")
@@ -79,9 +76,7 @@ class TestScanCampaigns:
         assert result == {"scanned_campaigns": 0, "triggered_tasks": 0}
 
     @patch("apps.ads.tasks.detect_video_task")
-    def test_scan_skips_image_soft_deleted_and_empty_url_creatives(
-        self, mock_detect, test_running_campaign
-    ):
+    def test_scan_skips_image_soft_deleted_and_empty_url_creatives(self, mock_detect, test_running_campaign):
         # 图片素材：不检测
         Creative.objects.create(
             campaign=test_running_campaign,
@@ -114,9 +109,7 @@ class TestScanCampaigns:
 class TestDetectVideoTask:
     """detect_video_task：规则匹配 → 命中写 ViolationRecord（真实链路，无外部下载）。"""
 
-    def test_writes_violation_on_keyword_hit(
-        self, test_running_campaign, test_rule
-    ):
+    def test_writes_violation_on_keyword_hit(self, test_running_campaign, test_rule):
         # update_state 会写 result backend（Redis），测试中打桩隔离
         with patch.object(detect_video_task, "update_state"):
             result = detect_video_task(
@@ -135,9 +128,7 @@ class TestDetectVideoTask:
         assert violation.resolved is False
         assert "竞品A" in violation.description
 
-    def test_clean_when_no_keyword_match(
-        self, test_running_campaign, test_advertiser, test_video_creative
-    ):
+    def test_clean_when_no_keyword_match(self, test_running_campaign, test_advertiser, test_video_creative):
         from apps.ads.models import MonitorRule
 
         MonitorRule.objects.create(

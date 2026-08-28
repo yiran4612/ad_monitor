@@ -27,7 +27,11 @@ class ViolationViewSet(viewsets.GenericViewSet):
             return ViolationCreateSerializer
         return ViolationListSerializer
 
-    @extend_schema(summary="违规记录列表", description="支持 ?campaign_id=<uuid> 过滤", responses={200: ViolationListSerializer(many=True)})
+    @extend_schema(
+        summary="违规记录列表",
+        description="支持 ?campaign_id=<uuid> 过滤",
+        responses={200: ViolationListSerializer(many=True)},
+    )
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -70,6 +74,4 @@ class ViolationViewSet(viewsets.GenericViewSet):
             return Response({"code": 404, "msg": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except ViolationAlreadyResolved as e:
             return Response({"code": 400, "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            {"code": 200, "msg": "处理成功", "data": ViolationListSerializer(violation).data}
-        )
+        return Response({"code": 200, "msg": "处理成功", "data": ViolationListSerializer(violation).data})

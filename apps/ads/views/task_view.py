@@ -1,11 +1,12 @@
 # Layer: api
-from rest_framework import viewsets, status
-from rest_framework.response import Response
 from celery.result import AsyncResult
+from rest_framework import status, viewsets
+from rest_framework.response import Response
+
 from apps.ads.tasks import detect_video_task
 
-class TaskViewSet(viewsets.ViewSet):
 
+class TaskViewSet(viewsets.ViewSet):
     def create(self, request):
         campaign_id = request.data.get("campaign_id")
         video_url = request.data.get("video_url")
@@ -15,10 +16,10 @@ class TaskViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         result = detect_video_task.delay(campaign_id, video_url)
-        return Response({
-            "code": 200, "msg": "任务已提交",
-            "data": {"task_id": result.id, "status": "pending"}
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {"code": 200, "msg": "任务已提交", "data": {"task_id": result.id, "status": "pending"}},
+            status=status.HTTP_201_CREATED,
+        )
 
     def retrieve(self, request, pk=None):
         result = AsyncResult(pk)
@@ -26,7 +27,12 @@ class TaskViewSet(viewsets.ViewSet):
             data = {"task_id": pk, "status": "pending", "progress": 0}
         elif result.state == "PROGRESS":
             meta = result.info or {}
-            data = {"task_id": pk, "status": "running", "progress": meta.get("progress", 0), "step": meta.get("step", "")}
+            data = {
+                "task_id": pk,
+                "status": "running",
+                "progress": meta.get("progress", 0),
+                "step": meta.get("step", ""),
+            }
         elif result.state == "SUCCESS":
             data = {"task_id": pk, "status": "success", "result": result.result}
         elif result.state == "FAILURE":

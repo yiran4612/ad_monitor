@@ -18,7 +18,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .base import *  # noqa: F401,F403
+from .base import *
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -32,9 +32,7 @@ load_dotenv(BASE_DIR / ".env")
 DEBUG = os.environ.get("DEBUG", "false").lower() in ("1", "true", "yes")
 
 # 容器内默认放开（compose 网络内由上游 Nginx 收紧），可用 ALLOWED_HOSTS 覆盖
-ALLOWED_HOSTS = [
-    h.strip() for h in os.environ.get("ALLOWED_HOSTS", "*").split(",") if h.strip()
-]
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "*").split(",") if h.strip()]
 
 # ──────────────────────────────────────────────
 # 2. 数据库策略：sqlite（默认）/ postgres
@@ -70,12 +68,8 @@ else:
 
 # 兼容旧 REDIS_URL 变量；均未设置时回退 redis://redis:6379/0（compose 中已注入）
 _redis_url = os.environ.get("REDIS_URL")
-CELERY_BROKER_URL = (
-    os.environ.get("CELERY_BROKER_URL") or _redis_url or "redis://redis:6379/0"
-)
-CELERY_RESULT_BACKEND = (
-    os.environ.get("CELERY_RESULT_BACKEND") or _redis_url or "redis://redis:6379/0"
-)
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL") or _redis_url or "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND") or _redis_url or "redis://redis:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -90,7 +84,7 @@ CELERY_TASK_EAGER_PROPAGATES = False
 # 3.1 Celery Beat 定时调度
 # ──────────────────────────────────────────────
 
-from celery.schedules import crontab  # noqa: E402
+from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
     "scan-campaigns-every-10-min": {
@@ -104,7 +98,9 @@ CELERY_BEAT_SCHEDULE = {
 # ──────────────────────────────────────────────
 
 CORS_ALLOW_ALL_ORIGINS = os.environ.get("CORS_ALLOW_ALL_ORIGINS", "true").lower() in (
-    "1", "true", "yes",
+    "1",
+    "true",
+    "yes",
 )
 
 # ──────────────────────────────────────────────

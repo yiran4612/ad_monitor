@@ -27,8 +27,8 @@ class JWTService:
         except TokenError as e:
             message = str(e).lower()
             if "expired" in message:
-                raise TokenExpired()
+                raise TokenExpired() from e
             if "blacklist" in message:
-                raise TokenBlacklisted()
-            raise InvalidToken(str(e))
+                raise TokenBlacklisted() from e
+            raise InvalidToken(str(e)) from e
         return access_token.payload

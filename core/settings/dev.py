@@ -1,11 +1,12 @@
-from pathlib import Path
 import os
+
+# ===== JWT 有效期 =====
+from datetime import timedelta
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .base import *  # noqa
-# ===== JWT 有效期 =====
-from datetime import timedelta
+from .base import *
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -47,30 +48,28 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # ===== 第三方 =====
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
     "corsheaders",
-
     # ===== 项目应用 =====
     "apps.users",
     "apps.ads",
 ]
 
 # ===== JWT 配置 =====
-# 默认access token有效期为5分钟，refresh token有效期为1天，开发期可以调整为更长时间，方便测试   
+# 默认access token有效期为5分钟，refresh token有效期为1天，开发期可以调整为更长时间，方便测试
 SIMPLE_JWT = {
     # 签名密钥沿用 base 的环境变量 JWT_SIGNING_KEY（未设置时回退 SECRET_KEY）
     "SIGNING_KEY": JWT_SIGNING_KEY,
-    #生成环境用，不能在线上保存SIGNING_KEY，从本地读取
+    # 生成环境用，不能在线上保存SIGNING_KEY，从本地读取
     # "SIGNING_KEY": os.environ.get(
     #     "JWT_SIGNING_KEY",
     #     os.environ.get("SIMPLE_JWT_SIGNING_KEY", SECRET_KEY)
     # ),
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),   # 改成 24 小时
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),    # 改成 7 天
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),  # 改成 24 小时
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # 改成 7 天
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
 }

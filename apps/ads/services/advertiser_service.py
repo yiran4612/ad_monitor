@@ -7,13 +7,12 @@ from apps.ads.models import Advertiser
 
 
 class AdvertiserService:
-
     @staticmethod
     def _get_active(advertiser_id) -> Advertiser:
         try:
             return Advertiser.objects.get(id=advertiser_id, is_deleted=False)
-        except Advertiser.DoesNotExist:
-            raise AdvertiserNotFound(advertiser_id)
+        except Advertiser.DoesNotExist as e:
+            raise AdvertiserNotFound(advertiser_id) from e
 
     @staticmethod
     @transaction.atomic
@@ -48,9 +47,7 @@ class AdvertiserService:
         keyword = filters.get("keyword")
         status = filters.get("status")
         if keyword:
-            qs = qs.filter(
-                Q(name__icontains=keyword) | Q(contact_mobile__icontains=keyword)
-            )
+            qs = qs.filter(Q(name__icontains=keyword) | Q(contact_mobile__icontains=keyword))
         if status:
             qs = qs.filter(status=status)
         return qs

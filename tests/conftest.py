@@ -1,6 +1,7 @@
 import pytest
-from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+
 from apps.ads.models import Advertiser, Campaign
 
 User = get_user_model()
@@ -17,12 +18,13 @@ def test_user(db):
     user = User.objects.create_user(
         mobile="13900139000",
         password="Test123456",
-    ) # pyright: ignore[reportCallIssue]
+    )  # pyright: ignore[reportCallIssue]
     user.is_staff = True
     user.is_superuser = True
     user.save()
 
     from rest_framework_simplejwt.tokens import RefreshToken
+
     refresh = RefreshToken()
     refresh["user_id"] = str(user.id)
     access_token = str(refresh.access_token)
@@ -32,7 +34,7 @@ def test_user(db):
 
 @pytest.fixture
 def auth_client(api_client, test_user):
-    user, token = test_user
+    _user, token = test_user
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
     return api_client
 
@@ -62,6 +64,7 @@ def test_campaign(db, test_advertiser):
 @pytest.fixture
 def test_rule(db, test_advertiser):
     from apps.ads.models import MonitorRule
+
     return MonitorRule.objects.create(
         advertiser=test_advertiser,
         rule_type="keyword",

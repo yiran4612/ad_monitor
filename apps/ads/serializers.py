@@ -3,10 +3,10 @@ from rest_framework import serializers
 
 from apps.ads.models import Advertiser, Campaign, Creative, MonitorRule, ViolationRecord
 
-
 # ──────────────────────────────────────────────
 # 广告主
 # ──────────────────────────────────────────────
+
 
 class AdvertiserSerializer(serializers.ModelSerializer):
     """广告主：列表 / 详情 / 创建 / 更新 共用。"""
@@ -29,6 +29,7 @@ class AdvertiserBriefSerializer(serializers.ModelSerializer):
 # 广告活动
 # ──────────────────────────────────────────────
 
+
 class CampaignListSerializer(serializers.ModelSerializer):
     """广告活动列表：嵌套广告主基本信息。"""
 
@@ -37,8 +38,16 @@ class CampaignListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = [
-            "id", "advertiser", "title", "platform", "budget",
-            "start_date", "end_date", "status", "created_at", "updated_at",
+            "id",
+            "advertiser",
+            "title",
+            "platform",
+            "budget",
+            "start_date",
+            "end_date",
+            "status",
+            "created_at",
+            "updated_at",
         ]
 
 
@@ -50,8 +59,16 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = [
-            "id", "advertiser", "title", "platform", "budget",
-            "start_date", "end_date", "status", "created_at", "updated_at",
+            "id",
+            "advertiser",
+            "title",
+            "platform",
+            "budget",
+            "start_date",
+            "end_date",
+            "status",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "status", "created_at", "updated_at"]
 
@@ -74,6 +91,7 @@ class CampaignBriefSerializer(serializers.ModelSerializer):
 # 违规记录
 # ──────────────────────────────────────────────
 
+
 class ViolationListSerializer(serializers.ModelSerializer):
     """违规记录列表 / 详情：嵌套广告活动基本信息。"""
 
@@ -82,8 +100,15 @@ class ViolationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ViolationRecord
         fields = [
-            "id", "campaign", "rule", "description", "screenshot_url",
-            "detected_at", "resolved", "created_at", "updated_at",
+            "id",
+            "campaign",
+            "rule",
+            "description",
+            "screenshot_url",
+            "detected_at",
+            "resolved",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["resolved", "created_at", "updated_at"]
 
@@ -97,8 +122,15 @@ class ViolationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ViolationRecord
         fields = [
-            "id", "campaign", "rule", "description", "screenshot_url",
-            "detected_at", "resolved", "created_at", "updated_at",
+            "id",
+            "campaign",
+            "rule",
+            "description",
+            "screenshot_url",
+            "detected_at",
+            "resolved",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "resolved", "created_at", "updated_at"]
 
@@ -106,6 +138,7 @@ class ViolationCreateSerializer(serializers.ModelSerializer):
 # ──────────────────────────────────────────────
 # 监控规则
 # ──────────────────────────────────────────────
+
 
 class MonitorRuleSerializer(serializers.ModelSerializer):
     """监控规则：列表 / 创建共用。
@@ -121,8 +154,13 @@ class MonitorRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = MonitorRule
         fields = [
-            "id", "advertiser", "rule_type", "keyword", "threshold",
-            "is_active", "created_at",
+            "id",
+            "advertiser",
+            "rule_type",
+            "keyword",
+            "threshold",
+            "is_active",
+            "created_at",
         ]
         read_only_fields = ["id", "created_at"]
 
@@ -137,6 +175,7 @@ class MonitorRuleSerializer(serializers.ModelSerializer):
 # 广告素材
 # ──────────────────────────────────────────────
 
+
 class CreativeListSerializer(serializers.ModelSerializer):
     """广告素材列表 / 详情：嵌套广告活动基本信息。"""
 
@@ -145,8 +184,14 @@ class CreativeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Creative
         fields = [
-            "id", "campaign", "name", "material_type", "file_url",
-            "duration", "created_at", "updated_at",
+            "id",
+            "campaign",
+            "name",
+            "material_type",
+            "file_url",
+            "duration",
+            "created_at",
+            "updated_at",
         ]
 
 
@@ -159,7 +204,13 @@ class CreativeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Creative
         fields = [
-            "id", "campaign", "name", "material_type", "file_url",
-            "duration", "created_at", "updated_at",
+            "id",
+            "campaign",
+            "name",
+            "material_type",
+            "file_url",
+            "duration",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]

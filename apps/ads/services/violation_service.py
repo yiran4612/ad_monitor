@@ -11,7 +11,6 @@ from apps.ads.models import Campaign, ViolationRecord
 
 
 class ViolationService:
-
     @staticmethod
     @transaction.atomic
     def create_violation(data: dict) -> ViolationRecord:
@@ -20,19 +19,17 @@ class ViolationService:
         rule_id = payload.pop("rule")
         try:
             Campaign.objects.get(id=campaign_id, is_deleted=False)
-        except Campaign.DoesNotExist:
-            raise CampaignNotFound(campaign_id)
-        return ViolationRecord.objects.create(
-            campaign_id=campaign_id, rule_id=rule_id, **payload
-        )
+        except Campaign.DoesNotExist as e:
+            raise CampaignNotFound(campaign_id) from e
+        return ViolationRecord.objects.create(campaign_id=campaign_id, rule_id=rule_id, **payload)
 
     @staticmethod
     @transaction.atomic
     def resolve_violation(violation_id) -> ViolationRecord:
         try:
             violation = ViolationRecord.objects.get(id=violation_id)
-        except ViolationRecord.DoesNotExist:
-            raise ViolationNotFound(violation_id)
+        except ViolationRecord.DoesNotExist as e:
+            raise ViolationNotFound(violation_id) from e
         if violation.resolved:
             raise ViolationAlreadyResolved(violation_id)
         violation.resolved = True

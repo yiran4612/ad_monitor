@@ -7,6 +7,7 @@ Celery 异步任务：视频违规检测 + 定时扫描。
 - scan_campaigns_task：定时扫描投放中活动的视频素材，逐个触发 detect_video_task；
 - process_creative_task：素材异步后处理（CreativeService.create_creative 触发）。
 """
+
 from celery import shared_task
 
 from apps.ads.models import Campaign, Creative
@@ -18,6 +19,7 @@ from apps.ads.models import Campaign, Creative
 
 def _detection_service():
     from apps.ads.services.detection_service import DetectionService
+
     return DetectionService
 
 

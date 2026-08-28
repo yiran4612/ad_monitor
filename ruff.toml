@@ -1,0 +1,38 @@
+# Ruff 配置：lint + format
+# 规则集说明见 requirements-dev.txt / .github/workflows/lint.yml
+# 120 容纳 @extend_schema 装饰器与中文注释的自然长度（实际最长 101 列）
+line-length = 120
+target-version = "py311"
+# 迁移文件由 Django 自动生成，不参与 lint；htmlcov 是覆盖率产物
+extend-exclude = ["migrations", "htmlcov", "docker-data"]
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort（import 排序）
+    "B",   # flake8-bugbear（常见 bug 模式）
+    "UP",  # pyupgrade（旧语法升级提示）
+    "RUF", # ruff 自身规则
+]
+ignore = [
+    # 中文注释/docstring/字符串里的全角标点（，、→ 等）是本仓库书写惯例，非歧义字符
+    "RUF001",
+    "RUF002",
+    "RUF003",
+    # DRF 的 Meta 类（extra_kwargs/fields）与 Django models 大量使用类级可变默认值，
+    # 加 ClassVar 注解不符合生态惯例，整条忽略
+    "RUF012",
+]
+
+[lint.per-file-ignores]
+# settings 惯例：load_dotenv 之后才 import os、`from .base import *` 继承公共配置
+"core/settings/*.py" = ["E402", "F403", "F405"]
+
+[lint.isort]
+known-first-party = ["apps", "core", "ad_monitor", "tasks", "services"]
+
+[format]
+# 默认双引号，与项目现有风格一致
+quote-style = "double"
