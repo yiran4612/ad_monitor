@@ -10,6 +10,11 @@ class Creative(models.Model):
         IMAGE = "image", "图片"
         TEXT = "text", "图文"
 
+    class Status(models.TextChoices):
+        PENDING = "pending", "审核中"
+        APPROVED = "approved", "已通过"
+        REJECTED = "rejected", "已驳回"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     campaign = models.ForeignKey(
         "Campaign",
@@ -22,6 +27,12 @@ class Creative(models.Model):
         max_length=16,
         choices=MaterialType.choices,
         verbose_name="素材类型",
+    )
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.PENDING,
+        verbose_name="审核状态",
     )
     file_url = models.URLField(blank=True, verbose_name="素材地址")
     duration = models.IntegerField(

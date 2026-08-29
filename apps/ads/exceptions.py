@@ -17,6 +17,24 @@ class CampaignNotFound(Exception):
         super().__init__(detail)
 
 
+class CreativeNotFound(Exception):
+    """广告素材不存在。"""
+
+    def __init__(self, creative_id=None):
+        self.creative_id = creative_id
+        detail = "素材不存在" if creative_id is None else f"素材不存在: {creative_id}"
+        super().__init__(detail)
+
+
+class AdvPlatformNotFound(Exception):
+    """广告平台位不存在。"""
+
+    def __init__(self, element_id=None):
+        self.element_id = element_id
+        detail = "广告平台位不存在" if element_id is None else f"广告平台位不存在: {element_id}"
+        super().__init__(detail)
+
+
 class ViolationNotFound(Exception):
     """违规记录不存在。"""
 

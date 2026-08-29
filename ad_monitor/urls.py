@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from apps.ads.element_urls import user_urlpatterns
+
 urlpatterns = [
     # Django 管理后台
     path("admin/", admin.site.urls),
@@ -32,4 +34,9 @@ urlpatterns = [
     path("api/users/", include("apps.users.urls", namespace="users")),
     # 任务模块 API
     path("api/tasks/", include("apps.ads.task_urls", namespace="tasks")),
+    # P2：素材查询 + 广告平台/楼宇 Mock（双前缀，兼容前端带/不带 /api 两种路径）
+    path("api/element/", include("apps.ads.element_urls")),
+    path("element/", include("apps.ads.element_urls")),
+    path("api/user/", include(user_urlpatterns)),
+    path("user/", include(user_urlpatterns)),
 ]
