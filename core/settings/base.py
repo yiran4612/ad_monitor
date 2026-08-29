@@ -272,3 +272,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_URL = "admin:login"
 LOGOUT_URL = "admin:logout"
 LOGIN_REDIRECT_URL = "/admin/"
+
+# ──────────────────────────────────────────────
+# 15. 不会自动补“/”，防止任何 POST 被拦截
+# ──────────────────────────────────────────────
+APPEND_SLASH = False
