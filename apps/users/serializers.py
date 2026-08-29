@@ -18,13 +18,24 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    mobile = serializers.CharField(max_length=11, min_length=11)
+    """登录参数。
+
+    前端（Vue3）登录表单字段名为 ``account``，为兼容 Swagger / 后端调用方，
+    同时接受 ``username`` 与旧的 ``mobile``，三者任选其一。
+    校验通过后统一归一化为 ``account``。
+    """
+
+    account = serializers.CharField(max_length=64, required=False, allow_blank=True, default="")
+    username = serializers.CharField(max_length=64, required=False, allow_blank=True, default="")
+    mobile = serializers.CharField(max_length=11, required=False, allow_blank=True, default="")
     password = serializers.CharField(max_length=128, write_only=True)
 
-    def validate_mobile(self, value):
-        if not value.isdigit():
-            raise serializers.ValidationError("手机号必须为纯数字")
-        return value
+    def validate(self, attrs):
+        account = attrs.get("account") or attrs.get("username") or attrs.get("mobile")
+        if not account:
+            raise serializers.ValidationError("账号不能为空")
+        attrs["account"] = account
+        return attrs
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

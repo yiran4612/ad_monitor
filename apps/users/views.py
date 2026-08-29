@@ -33,12 +33,38 @@ def register_view(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_view(request):
+    """用户登录。
+
+    响应遵循前端协议：``{code, msg, data}``，其中 ``data.token`` 会被前端
+    写入 localStorage，并在后续请求中作为 ``token`` 请求头回传
+    （见 core.authentication.TokenHeaderAuthentication）。
+    """
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
     try:
-        result = UserService.login_user(**serializer.validated_data)
+        result = UserService.login_user(
+            mobile=serializer.validated_data["account"],
+            password=serializer.validated_data["password"],
+        )
     except InvalidCredentials as e:
         return Response({"code": 401, "msg": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
-    return Response({"code": 200, "msg": "登录成功", "data": result})
+    return Response(
+        {
+            "code": 200,
+            "msg": "success",
+            "data": {
+                # ── 前端协议字段 ──
+                "token": result["access"],
+                "account": result["mobile"],
+                "customerName": result["nickname"] or "",
+                # ── 兼容字段（Swagger / 既有调用方）──
+                "access": result["access"],
+                "refresh": result["refresh"],
+                "mobile": result["mobile"],
+                "nickname": result["nickname"],
+                "role": result["role"],
+            },
+        }
+    )

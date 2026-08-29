@@ -21,4 +21,15 @@ class TestPermissions:
         resp = api_client.get("/api/ads/advertisers/")
         assert resp.status_code == 401
         body = resp.json()
-        assert body["code"] == "token_not_valid"
+        # 统一响应信封：{code, msg, data}
+        assert body["code"] == 401
+        assert "msg" in body
+        assert body["data"] is None
+
+    # ===== 前端协议：token 请求头 -> 与 Bearer 等价 =====
+    def test_token_header_authenticates(self, api_client, test_user):
+        _user, token = test_user
+        api_client.credentials(HTTP_TOKEN=token)
+        resp = api_client.get("/api/ads/advertisers/")
+        assert resp.status_code == 200
+        assert resp.json()["code"] == 200

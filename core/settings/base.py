@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     # "apps.users",
     "apps.users.apps.UsersConfig",
     "apps.ads.apps.AdsConfig",
+    "corsheaders",
 ]
 
 
@@ -153,8 +154,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ──────────────────────────────────────────────
 
 REST_FRAMEWORK = {
-    # 认证：SimpleJWT
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "EXCEPTION_HANDLER": "core.exception_handler.custom_exception_handler",
+    # 认证：前端 axios 发 `token` 头（core.authentication.TokenHeaderAuthentication），
+    # Swagger / 后端测试仍可用 SimpleJWT 的 `Authorization: Bearer`
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "core.authentication.TokenHeaderAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     # 权限：默认需要登录（注册/登录视图在 apps/users/views.py 显式 AllowAny）
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     # 分页
@@ -199,6 +205,40 @@ SIMPLE_JWT = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+# 开发环境：允许 localhost 前端（3000=React, 8080=Vue, 5173=Vite）
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+# 开发阶段宽松一点：允许这些 method
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    # 前端 axios 拦截器注入的自定义认证头，预检请求必须放行
+    "token",
+]
 
 
 # ──────────────────────────────────────────────
