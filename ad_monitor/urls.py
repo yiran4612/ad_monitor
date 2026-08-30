@@ -15,6 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
@@ -40,3 +42,8 @@ urlpatterns = [
     path("api/user/", include(user_urlpatterns)),
     path("user/", include(user_urlpatterns)),
 ]
+
+# media 文件（P2.5 素材上传）：开发/测试环境 Django 直出；
+# 生产环境用 nginx alias 托管 /media/ → <容器内 MEDIA_ROOT>，不走这段。
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

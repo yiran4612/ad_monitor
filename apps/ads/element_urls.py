@@ -14,6 +14,10 @@ from apps.ads.views import element_views
 element_urlpatterns = [
     # 素材内容
     path("content/query", element_views.content_query, name="element-content-query"),
+    # 素材上传（P2.5：本地 media 存储；uploadImage/uploadVideo 为同一 view 的别名路由）
+    path("content/upload", element_views.content_upload, name="element-content-upload"),
+    path("content/uploadImage", element_views.content_upload, name="element-content-upload-image"),
+    path("content/uploadVideo", element_views.content_upload, name="element-content-upload-video"),
     # 广告平台位（Mock）
     path("advPlatform/list", element_views.adv_platform_list, name="adv-platform-list"),
     path("advPlatform/add", element_views.adv_platform_add, name="adv-platform-add"),

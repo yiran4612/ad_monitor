@@ -20,6 +20,8 @@ class Creative(models.Model):
         "Campaign",
         on_delete=models.CASCADE,
         related_name="creatives",
+        null=True,
+        blank=True,
         verbose_name="广告活动",
     )
     name = models.CharField(max_length=200, verbose_name="素材名称")
@@ -34,7 +36,19 @@ class Creative(models.Model):
         default=Status.PENDING,
         verbose_name="审核状态",
     )
-    file_url = models.URLField(blank=True, verbose_name="素材地址")
+    file_url = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name="素材地址",
+        help_text="本地相对路径 /media/... 或完整 URL",
+    )
+    cover_url = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        verbose_name="封面地址",
+        help_text="视频封面图（本地相对路径，无则为空）",
+    )
     duration = models.IntegerField(
         null=True,
         blank=True,

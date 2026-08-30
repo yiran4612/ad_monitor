@@ -22,9 +22,17 @@ from apps.ads.element_serializers import (
     AdvPlatformSaveSerializer,
     BuildingQuerySerializer,
     CreativeQuerySerializer,
+    CreativeUploadSerializer,
     PaginationSerializer,
 )
-from apps.ads.exceptions import AdvPlatformNotFound, CampaignNotFound, CreativeNotFound
+from apps.ads.exceptions import (
+    AdvPlatformNotFound,
+    CampaignNotFound,
+    CreativeNotFound,
+    UploadParamError,
+    UploadTypeMismatch,
+)
+from apps.ads.models import Creative
 from apps.ads.services.adv_platform_service import AdvPlatformService
 from apps.ads.services.building_service import BuildingService
 from apps.ads.services.creative_service import CreativeService
@@ -62,7 +70,7 @@ def content_query(request):
             creative = CreativeService.get_creative(params["id"])
         except CreativeNotFound as e:
             return biz_error(str(e))
-        return success(CreativeService.to_payload(creative))
+        return success(CreativeService.to_payload(creative, request=request))
 
     try:
         result = CreativeService.query_creatives(
@@ -71,6 +79,7 @@ def content_query(request):
             material_type=params.get("material_type"),
             page=serializer.effective_page,
             page_size=serializer.effective_page_size,
+            request=request,
         )
     except CampaignNotFound as e:
         return param_error(str(e))
@@ -94,10 +103,71 @@ def ad_element_list(request):
             material_type=params.get("material_type"),
             page=serializer.effective_page,
             page_size=serializer.effective_page_size,
+            request=request,
         )
     except CampaignNotFound as e:
         return param_error(str(e))
     return success(_paged(result))
+
+
+# ── P2.5：素材上传（本地 media 存储，OSS 替代方案）──
+
+# 别名路由 → 强制素材类型（uploadImage / uploadVideo 与 upload 共用同一 view）
+_UPLOAD_FORCED_TYPE = {
+    "uploadimage": Creative.MaterialType.IMAGE,
+    "uploadvideo": Creative.MaterialType.VIDEO,
+}
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def content_upload(request):
+    """``POST /element/content/upload``（uploadImage / uploadVideo 为别名路由）。
+
+    - multipart/form-data，``file`` 必填
+    - ``material_type`` 可选（image|video，默认 image），uploadImage/uploadVideo
+      路由会根据路径强制覆盖
+    - 校验与落盘在 Service 层（LocalStorageService），本函数只取参数
+    """
+    route_tail = request.path.rstrip("/").rsplit("/", 1)[-1].lower()
+    forced_type = _UPLOAD_FORCED_TYPE.get(route_tail)
+
+    serializer = CreativeUploadSerializer(data=request.data)
+    if not serializer.is_valid():
+        return param_error(first_error(serializer.errors))
+
+    material_type = forced_type or serializer.validated_data.get("material_type") or Creative.MaterialType.IMAGE
+    uploaded = request.FILES.get("file")
+    if uploaded is None:
+        return param_error("请选择文件")
+
+    try:
+        result = CreativeService.upload_creative(
+            uploaded,
+            material_type,
+            name=serializer.validated_data.get("name"),
+            campaign_id=serializer.validated_data.get("campaign_id"),
+        )
+    except UploadParamError as e:
+        return param_error(str(e))
+    except UploadTypeMismatch as e:
+        return biz_error(str(e))
+    except CampaignNotFound as e:
+        return param_error(str(e))
+
+    creative = result["creative"]
+    payload = {
+        "id": str(creative.id),
+        "elementId": str(creative.id),
+        "materialType": 0 if creative.material_type == Creative.MaterialType.IMAGE else 1,
+        "url": request.build_absolute_uri(creative.file_url),
+        "coverUrl": request.build_absolute_uri(creative.cover_url) if creative.cover_url else None,
+        "duration": float(creative.duration or 0),
+        "filename": result["filename"],
+        "size": result["size"],
+        "campaignId": str(creative.campaign_id) if creative.campaign_id else None,
+    }
+    return success(payload, msg="上传成功")
 
 
 # ── 广告平台位（Mock）──

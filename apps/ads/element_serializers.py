@@ -45,6 +45,18 @@ class CreativeQuerySerializer(PaginationSerializer):
     material_type = serializers.ChoiceField(choices=Creative.MaterialType.choices, required=False)
 
 
+class CreativeUploadSerializer(serializers.Serializer):
+    """``POST /element/content/upload`` 表单参数（file 由 View 直接从 FILES 取）。"""
+
+    material_type = serializers.ChoiceField(
+        choices=[Creative.MaterialType.IMAGE, Creative.MaterialType.VIDEO],
+        required=False,
+        help_text="素材类型（image|video，默认 image；uploadImage/uploadVideo 路由会强制覆盖）",
+    )
+    campaign_id = serializers.UUIDField(required=False, help_text="广告活动ID（可选）")
+    name = serializers.CharField(required=False, max_length=200, allow_blank=True, help_text="素材名")
+
+
 class AdvPlatformSaveSerializer(serializers.Serializer):
     """``POST /element/advPlatform/add`` 与 ``/edit`` 公共参数（edit 需 element_id）。"""
 

@@ -35,6 +35,14 @@ class AdvPlatformNotFound(Exception):
         super().__init__(detail)
 
 
+class UploadParamError(Exception):
+    """上传文件校验失败（缺文件/超大小等，1001 参数错误）。"""
+
+
+class UploadTypeMismatch(Exception):
+    """文件类型与素材类型不一致（1002 业务错误）。"""
+
+
 class ViolationNotFound(Exception):
     """违规记录不存在。"""
 

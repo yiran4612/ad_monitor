@@ -1,11 +1,13 @@
 # Layer: service
 import uuid
+from pathlib import Path
 
 from django.db import transaction
 from django.db.models import QuerySet
 
 from apps.ads.exceptions import CampaignNotFound, CreativeNotFound
 from apps.ads.models import Campaign, Creative
+from apps.ads.services.storage_service import LocalStorageService
 from apps.ads.tasks import process_creative_task
 
 
@@ -51,6 +53,36 @@ class CreativeService:
     # ── P2：素材查询（content/query 与 adElementList 共用）──
 
     @staticmethod
+    @transaction.atomic
+    def upload_creative(uploaded_file, material_type: str, name: str | None = None, campaign_id=None) -> dict:
+        """P2.5 上传素材：本地存储落盘 + 写 Creative 记录。
+
+        - 校验与落盘委托 ``LocalStorageService``（换 OSS 只改那一层）
+        - ``name`` 缺省用原文件名去扩展名
+        - ``campaign_id`` 可选，传入则校验存在
+        - 返回 ``{creative, filename, size}``（filename/size 为原始文件名与字节数）
+        """
+        meta = LocalStorageService.save(uploaded_file, material_type)
+
+        campaign_uuid = None
+        if campaign_id:
+            campaign_uuid = CreativeService._to_campaign_id(campaign_id)
+            if not Campaign.objects.filter(id=campaign_uuid, is_deleted=False).exists():
+                raise CampaignNotFound(campaign_uuid)
+
+        display_name = (name or "").strip() or Path(meta["filename"]).stem
+        creative = Creative.objects.create(
+            campaign_id=campaign_uuid,
+            name=display_name,
+            material_type=material_type,
+            status=Creative.Status.PENDING,
+            file_url=meta["url"],
+            cover_url=meta.get("cover_url", ""),
+            duration=int(meta.get("duration") or 0),
+        )
+        return {"creative": creative, "filename": meta["filename"], "size": meta["size"]}
+
+    @staticmethod
     def get_creative(creative_id) -> Creative:
         """按 ID 取未删除素材，不存在（含非法 UUID）抛 CreativeNotFound。"""
         creative_uuid = CreativeService._to_creative_id(creative_id)
@@ -66,11 +98,13 @@ class CreativeService:
         material_type=None,
         page: int = 1,
         page_size: int = 10,
+        request=None,
     ) -> dict:
         """多条件分页查询素材，返回 ``{count, results}``（P2 规格）。
 
         ``campaign_id`` 合法性在 Service 层校验（非法 UUID 抛 CampaignNotFound，
         由 View 转 1001 参数错误）。
+        ``request`` 传入时，本地相对路径（``/media/...``）会被拼成完整 URL。
         """
         queryset = Creative.objects.filter(is_deleted=False).select_related("campaign")
 
@@ -87,19 +121,33 @@ class CreativeService:
         total = queryset.count()
         offset = (page - 1) * page_size
         creatives = queryset[offset : offset + page_size]
-        return {"count": total, "results": [CreativeService.to_payload(c) for c in creatives]}
+        return {
+            "count": total,
+            "results": [CreativeService.to_payload(c, request=request) for c in creatives],
+        }
 
     @staticmethod
-    def to_payload(creative: Creative) -> dict:
-        """单条素材的对外结构：规格字段 + 前端 ADPutManage 页面别名字段。"""
+    def to_payload(creative: Creative, request=None) -> dict:
+        """单条素材的对外结构：规格字段 + 前端 ADPutManage 页面别名字段。
+
+        上传素材的 ``file_url`` / ``cover_url`` 存的是本地相对路径（``/media/...``），
+        传入 ``request`` 时拼成完整 URL；历史绝对 URL 原样返回。
+        """
+
+        def _abs(url: str) -> str:
+            if request and url and url.startswith("/"):
+                return request.build_absolute_uri(url)
+            return url
+
+        cover_url = _abs(creative.cover_url) if creative.cover_url else ""
         base = {
             # 规格字段
             "id": str(creative.id),
             "name": creative.name,
-            "url": creative.file_url,
+            "url": _abs(creative.file_url),
             "material_type": creative.material_type,
             "status": creative.status,
-            "campaign_id": str(creative.campaign_id),
+            "campaign_id": str(creative.campaign_id) if creative.campaign_id else None,
             "created_at": creative.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             # 前端别名字段（ADPutManage/index.vue 直接消费）
             "element_id": str(creative.id),
@@ -107,8 +155,8 @@ class CreativeService:
             "contentType": 0 if creative.material_type == Creative.MaterialType.IMAGE else 1,
             "dulation": creative.duration or 0,
             "definition": "",
-            "hotImgUrl": creative.file_url,
-            "vedioUrl": creative.file_url if creative.material_type == Creative.MaterialType.VIDEO else "",
+            "hotImgUrl": cover_url or _abs(creative.file_url),
+            "vedioUrl": _abs(creative.file_url) if creative.material_type == Creative.MaterialType.VIDEO else "",
             "createTime": creative.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return base
